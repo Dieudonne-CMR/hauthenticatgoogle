@@ -5,7 +5,8 @@ header('location:connexion.php');
 exit();
 }
 $user = $_SESSION['user'];
-
+// print_r($_SESSION['print']);
+// var_dump( $_SESSION['sub']);
 ?>
 
 <!DOCTYPE html>
@@ -26,7 +27,6 @@ $user = $_SESSION['user'];
     <ul>
         <li> Nom : <?=$user['given_name']?> </li>
         <li> Email:<?=$user['email']?></li>
-        <li> Email:<?=$user['password']?></li>
     </ul> 
 </body>
 </html>

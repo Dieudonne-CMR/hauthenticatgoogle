@@ -1,7 +1,7 @@
 <?php 
 require('./config.php');
-// print_r($_COOKIE);
-// print_r($_POST); 
+include "includes/class.db.php";
+include "includes/fontion.php";
 if(!empty($_POST['credential'])){
   if(
      empty($_COOKIE['g_csrf_token']) || empty($_POST['g_csrf_token']) || $_COOKIE['g_csrf_token'] != $_POST['g_csrf_token']
@@ -16,13 +16,36 @@ if(!empty($_POST['credential'])){
    $idToken = $_POST['credential'];
    $user = $client->verifyIdToken($idToken);
    print_r( $user );
-if ($user) {
-   $_SESSION['user'] = $user;
-   header('location:profil.php');
-   exit();
-} else {
-   echo "Erreur lors de l'authentification";
-}
+   if ($user) {
+      $name = strip_tags(trim($user['given_name']));
+	   $name = str_replace(array("\r","\n"),array(" "," "),$name);
+      $email = filter_var(trim($user['email']), FILTER_SANITIZE_EMAIL);
+      $profil = trim($user['picture']);
+      $sub = trim($user['sub']);
+      $_SESSION['sub']=$sub;
+      $recup=select_table_where('user', 'SubUser', $sub);
+    if(empty($recup)){
+      $DB->query("INSERT INTO user (NomUser,EmailUser,ProfilUser,SubUser) VALUES (:NomUser, :EmailUser, :ProfilUser, :SubUser)",
+      [
+     'NomUser'=>$name,
+     'EmailUser'=>$email,
+     'ProfilUser'=>$profil,
+     'SubUser'=>$sub
+      ]
+      );
+      $_SESSION['user'] = $user;
+      header('Location: profil.php?sub=' . $sub);
+      exit();
+     }else{
+      $_SESSION['user'] = $user;
+      $sub1=$recup[0]->SubUser;
+      header('Location: profil.php?sub=' . $sub1);
+      exit();
+     }
+
+    } else {
+    echo "Erreur lors de l'authentification";
+   }
 }
 ?>
 <!DOCTYPE html>
